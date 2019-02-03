@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+from selenium import webdriver
+
+webdriver.Chrome()
+=======
 import selenium
 from selenium.webdriver.common.keys import Keys
 
@@ -24,3 +29,4 @@ class InstagramScraper():
         pass
 
     
+>>>>>>> 9fd30a5e8ca5d374e573da0330c35ca411c35810
