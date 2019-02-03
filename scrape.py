@@ -1,18 +1,26 @@
-import requests
+import selenium
+from selenium.webdriver.common.keys import Keys
 
-# Fill in your details here to be posted to the login form.
-payload = {
-    'inUserName': 'slayer_man_226',
-    'inUserPass': 'sailboat123'
-}
+class InstagramScraper():
+    def __init__(self):
+        self.driver = webdriver.Chrome()
+        # other driver configurations such as:
+        #   prematurely scrape the webpage
+        #   dont load images
+        #
+        pass
 
-# Use 'with' to ensure the session context is closed after use.
-with requests.Session() as s:
-    p = s.post('LOGIN_URL', data=payload)
-    # print the html returned or something more intelligent to see if it's a successful login page.
-    print p.text
+    def authenticate(self):
+        # login to https://www.instagram.com/accounts/login/?source=auth_switcher
+        pass
 
-    # An authorised request.
-    r = s.get('A protected web page url')
-    print r.text
-        # etc...
+    def open_user(self, username):
+        # direct to a new webpage of users
+        url_to_user = r'https://www.instagram.com/' + username
+        pass
+
+    def get_image_data(self):
+        # try to open first n images and gather captions
+        pass
+
+    
