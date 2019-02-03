@@ -7,6 +7,7 @@ import requests
 
 import requests
 
+<<<<<<< HEAD
 # Fill in your details here to be posted to the login form.
 payload = {
     'inUserName': 'slayer_man_226',
@@ -22,3 +23,8 @@ with requests.Session() as s:
     # An authorised request.
     r = s.get('A protected web page url')
     print r.text
+=======
+    print('haha')
+
+    #helloooooo
+>>>>>>> 51392cbaa13da895237c5ed4782060e5b1e19930
