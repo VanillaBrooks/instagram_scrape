@@ -1,21 +1,26 @@
 fn cosine_sim(orginal_user_vec: Vec<Vec<u32>>, second_user_vec: Vec<Vec<u32>>) -> f32 {
     let user_2_magnitudes: Vec<f32> = second_user_vec.iter().map(|v| magnitude(v)).collect::<Vec<_>>();
     let user_1_magnitudes: Vec<f32> = orginal_user_vec.iter().map(|v| magnitude(v)).collect::<Vec<_>>();
-    let length = orginal_user_vec.len();
+    let length = orginal_user_vec.len().pow(2);
+    let len_orig = orginal_user_vec.len() as f32;
 
     let mut total : f32 = 0.0;
 
-    for i in 0..length{
+    for i in 0..orginal_user_vec.len(){
         let curr_vec = &orginal_user_vec[i];
         let curr_mag = &user_1_magnitudes[i];
 
-        for j in 0..length{
-            total += dot_product(&curr_vec, &second_user_vec[j])  / (curr_mag * user_2_magnitudes[j]);
+        for j in 0..second_user_vec.len(){
+            let k = dot_product(&curr_vec, &second_user_vec[j])  / (curr_mag * user_2_magnitudes[j]);//.acos() * 180.0 / std::f32::consts::PI;
+            println!{"currnet is {}", k}
+            total += k;
         }
     }
-    total = total / (length as f32);
+    println!{"total is {} length is {}", total, length}
+    //total = total / length as f32;
+    total = total / len_orig;
 
-    return total.acos()
+    return total
 
 
 }
@@ -53,10 +58,8 @@ fn cmp(original: &String, indexer: &mut Vec<String>) -> Vec<u32> {
             },
         }
     }
-    
 
     return counts
-
 
 }
 
@@ -73,29 +76,27 @@ fn count_occurances<'a>(original: Vec<String>, compare: Vec<String>) -> (Vec<Vec
         comp_count.push(cmp(&phrase, &mut indexer));
     }
 
-    let mut orig_copy : Vec<Vec<u32>> = Vec::new();
-    for mut row in orig_count{
-        println!{"here {:?}", row}
-        let k = row.append(&mut vec![0; row.len() - indexer.len()]);
-        println!{"here {:?}", k} 
+    for row in &mut orig_count{
+        row.append(&mut vec![0; indexer.len() - row.len()]);
+
     }
 
-   // for mut row in comp_count{
-   //     row.append(&mut vec![0; row.len() - indexer.len()]);
-    //}
+    for  row in &mut comp_count{
+        row.append(&mut vec![0; indexer.len() - row.len()]);
+    }
 
-    //return (orig_count, comp_count)
-    (Vec::new(), Vec::new())
+    (orig_count, comp_count)
 
 }
 
 fn main() {
     let phrases_1 : Vec<String> = vec!["sample".to_string(), "phrase".to_string()];
-    let phrases_2 : Vec<String> = vec!["sample".to_string(), "phrase".to_string()];
+    let phrases_2 : Vec<String> = vec!["sample".to_string(), "here".to_string()];
     println!{"{:?}", phrases_1}
 
     let (v1, v2) = count_occurances(phrases_1, phrases_2);
     println!{"v1 {:?} v2 {:?}", v1, v2}
-   // let similarities = cosine_sim(v1, v2);
+    let similarities = cosine_sim(v1, v2);
+    println!{"{:?}", similarities }
 
 }
