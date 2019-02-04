@@ -24,9 +24,17 @@ class InstagramScraper():
 		print(self.driver.page_source)
 		self.driver.quit()
 
-	def authenticate(self):
+	def authenticate(self, username=False, password=False):
 		# login to https://www.instagram.com/accounts/login/?source=auth_switcher
-		pass
+
+		if not (username and password):
+			with open (r'authentication/config.json') as file:
+				user_details = json.load(file)
+				username = user_details['username']
+				password = user_details['password']
+
+		# enter the password to the login page here
+
 
 	def open_user(self, username):
 		# direct to a new webpage of users
@@ -41,3 +49,13 @@ class InstagramScraper():
 		# fetch followers / follows / **posts**
 		# this reduces strain on rescraping the system
 		pass
+
+if __name__ == "__main__":
+	import json
+
+	with open (r'authentication/config.json') as file:
+		user_details = json.load(file)
+
+	print(user_details)
+	i = InstagramScraper()
+	i.authenticate()
