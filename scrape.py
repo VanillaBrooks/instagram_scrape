@@ -4,20 +4,25 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as expected
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 import json
+
 #https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Headless_mode
 
 
 
 class InstagramScraper():
 	def __init__(self):
-		# configure a headless webdriver
 		options = Options()
-		options.add_argument('-headless')
-		self.driver = Firefox(executable_path='geckodriver', options=options)
-		wait = WebDriverWait(self.driver, timeout=10)
+		# options.add_argument('-headless')	# headless mode so the window doesnt actually appear (disabled currently)
+		caps = DesiredCapabilities().FIREFOX
+		caps["pageLoadStrategy"] = "none"	# scrape page prematurely
 
+		self.driver = Firefox(executable_path='geckodriver', options=options,capabilities =caps) # driver to access webpages
+
+	# code from mozilla
 	def __example(self):
 		self.driver.get('http://www.google.com')
 		wait.until(expected.visibility_of_element_located((By.NAME, 'q'))).send_keys('headless firefox' + Keys.ENTER)
@@ -26,16 +31,25 @@ class InstagramScraper():
 		self.driver.quit()
 
 	def authenticate(self, username=False, password=False):
-		# login to https://www.instagram.com/accounts/login/?source=auth_switcher
+		LOGIN_URL = 'https://www.instagram.com/accounts/login/'
 
+		# get login details from json if none specified
 		if not (username and password):
 			with open (r'authentication/config.json') as file:
 				user_details = json.load(file)
 				username = user_details['username']
 				password = user_details['password']
 
-		# enter the password to the login page here
+		self.driver.get(LOGIN_URL) # load up the instagram login page
 
+		# TODO: Fix this xpath (instagram uses .js to create new ids each time)
+		username = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="f7f45dd105b62"]')))
+		username.click()
+		username.send_keys(username) # send the keys for the username
+
+		password = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//[@id="change me pls"]')))
+		passsword.click()
+		password.send_keys(password) # send the keys for the password
 
 	def open_user(self, username):
 		# direct to a new webpage of users
@@ -80,6 +94,6 @@ def connection():
 		f.write(soup.prettify().encode("utf8"))
 
 
-
 if __name__ == "__main__":
-	i = connection()
+	i = InstagramScraper()
+	i.authenticate()
