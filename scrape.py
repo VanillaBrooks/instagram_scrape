@@ -5,6 +5,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as expected
 from selenium.webdriver.support.wait import WebDriverWait
 
+import json
 #https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Headless_mode
 
 
@@ -50,12 +51,35 @@ class InstagramScraper():
 		# this reduces strain on rescraping the system
 		pass
 
-if __name__ == "__main__":
-	import json
-
+# attempt to do it with requests
+def connection():
+	import requests
 	with open (r'authentication/config.json') as file:
 		user_details = json.load(file)
+		username = user_details['username']
+		password = user_details['password']
 
-	print(user_details)
-	i = InstagramScraper()
-	i.authenticate()
+	import bs4
+
+	req = requests.Session()
+	base = req.get("https://instagram.com")
+	req.headers = {'user-agent': r'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0'}
+	req.headers.update({"Referer": "https://instagram.com"})
+
+	req.headers.update({'X-CSRFToken': base.cookies['csrftoken']})
+
+	login = req.post('https://instagram.com/login', data={"Username": "slayer_man_226", "Password": "sailboat123"}, allow_redirects=True)
+
+	req.headers.update({'X-CSRFToken' : login.cookies['csrftoken']})
+
+	result = req.get("https://instagram.com/ayaanakano", auth=(username, password))
+
+	soup = bs4.BeautifulSoup(result.text)
+
+	with open ('html.txt', 'wb') as f:
+		f.write(soup.prettify().encode("utf8"))
+
+
+
+if __name__ == "__main__":
+	i = connection()
