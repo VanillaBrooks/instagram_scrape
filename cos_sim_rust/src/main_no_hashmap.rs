@@ -1,5 +1,3 @@
-use hashbrown::HashMap;
-
 fn cosine_sim(orginal_user_vec: Vec<Vec<u32>>, second_user_vec: Vec<Vec<u32>>) -> f32 {
     let user_2_magnitudes: Vec<f32> = second_user_vec.iter().map(|v| magnitude(v)).collect::<Vec<_>>();
     let user_1_magnitudes: Vec<f32> = orginal_user_vec.iter().map(|v| magnitude(v)).collect::<Vec<_>>();
@@ -48,18 +46,15 @@ fn dot_product(vec_1: &Vec<u32>, vec_2: &Vec<u32>) -> f32{
 }
 
 
-fn cmp(original: &String, indexer: &mut HashMap<String, usize>) -> Vec<u32> {
-    // initialize a vector full of zeroes up until the current length of the hashmap
+fn cmp(original: &String, indexer: &mut Vec<String>) -> Vec<u32> {
     let mut counts  : Vec<u32> = vec![0; indexer.len()];
 
     for word in original.split(" "){
-        match indexer.get(word){
-            Some(x) => {
-                counts[*x] += 1;
-            },
-            None =>{
-                indexer.insert(word.to_string(), indexer.len());
+        match indexer.iter().position(|y| *y == word){
+            Some(x) => counts[x] += 1,
+            None => {
                 counts.push(1);
+                indexer.push(word.to_string());
             },
         }
     }
@@ -69,7 +64,7 @@ fn cmp(original: &String, indexer: &mut HashMap<String, usize>) -> Vec<u32> {
 }
 
 fn count_occurances<'a>(original: Vec<String>, compare: Vec<String>) -> (Vec<Vec<u32>>, Vec<Vec<u32>>) {
-    let mut indexer : HashMap<String, usize>= HashMap::new();
+    let mut indexer    : Vec<String> = Vec::new();
 
     let mut orig_count : Vec<Vec<u32>> = Vec::new();
     for phrase in original{
