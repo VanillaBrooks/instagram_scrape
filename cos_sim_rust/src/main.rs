@@ -54,7 +54,6 @@ fn dot_product(vec_1: &Vec<u32>, vec_2: &Vec<u32>) -> f32{
 
 
 fn cmp(original: &String, indexer_lock: &Arc<RwLock<HashMap<String, usize>>>) -> Vec<u32> {
-    let mut indexer = indexer_lock.read();
     // initialize a vector full of zeroes up until the current length of the hashmap
     
 
@@ -86,10 +85,18 @@ fn cmp(original: &String, indexer_lock: &Arc<RwLock<HashMap<String, usize>>>) ->
         if write{
             println!{"in write"}
             write = false;
+            println!{"ready to acquire the write lock"}
             let mut indexer_write = indexer_lock.write();
             println!{"got indexer_write lock"}
-            let length = indexer_write.len().clone();
-            indexer_write.insert(word.to_string(), length);
+            match indexer_write.get(word){
+                Some(x) => continue, // it was already  inserted into the hashmap
+                None => {
+                    let length = indexer_write.len().clone();
+                    indexer_write.insert(word.to_string(), length);
+                    println!{"added to hashmap"}
+                }
+            }
+
         }
         
 
@@ -136,7 +143,7 @@ fn threading (original_phrases: Vec<String>,  phrases_to_compare: Vec<String>, t
 
 
     let num_chunks = phrases_to_compare.len() / thread_count;
-    let num_chunks = 15;
+    let num_chunks = 3;
 
     rayon::scope( |t| {
         for chunk_to_compare in phrases_to_compare.chunks(num_chunks){
