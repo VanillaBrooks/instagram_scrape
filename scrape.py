@@ -43,11 +43,11 @@ class InstagramScraper():
 		self.driver.get(LOGIN_URL) # load up the instagram login page
 
 		# TODO: Fix this xpath (instagram uses .js to create new ids each time)
-		username = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="f7f45dd105b62"]')))
+		username = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[contains(@aria-label, ‘Phone number, username, or email’)]")))
 		username.click()
 		username.send_keys(username) # send the keys for the username
 
-		password = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//[@id="change me pls"]')))
+		password = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[contains(@aria-label, ‘Password’)]")))
 		passsword.click()
 		password.send_keys(password) # send the keys for the password
 
