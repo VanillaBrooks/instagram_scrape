@@ -55,9 +55,13 @@ class InstagramScraper():
 		passsword.click()
 		password.send_keys(password) # send the keys for the password
 
+
+
 	def open_user(self, username):
 		# direct to a new webpage of users
 		url_to_user = r'https://www.instagram.com/' + username
+		self.driver.get(url_to_user)
+		self.username = username
 		pass
 
 	def get_image_data(self):
@@ -76,6 +80,8 @@ class InstagramScraper():
 
 
 	def get_user_stats(self):
+		posts = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span")))
+
 		# fetch followers / follows / **posts**
 		# this reduces strain on rescraping the system
 		pass

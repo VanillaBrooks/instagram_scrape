@@ -22,10 +22,19 @@ setup(
 	include_package_data=True,
 	zip_safe=False,
 	platforms='any',
+<<<<<<< HEAD
 	# install_requires=[
 	# 	'milksnake',
 	# ],
 	# milksnake_tasks=[
 	# 	build_native,
 	# ]
+=======
+	install_requires=[
+		'milksnake',
+	],
+	#milksnake_tasks=[
+		#build_native,
+	#]
+>>>>>>> 4f43802791cbbbb266e0f9e70bb01a421269dd87
 )
