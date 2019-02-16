@@ -20,11 +20,14 @@ class InstagramScraper():
 		caps = DesiredCapabilities().FIREFOX
 		caps["pageLoadStrategy"] = "none"	# scrape page prematurely
 
+		self.all_data = [] # a collection of all the scraped user data held in a dictionary
 		#
 		# TODO: The executable_path will have to be reconfigured for the
 		# 		currnet location in instagram_scrape/webdrivers/geckodriver.exe
 		#
 		self.driver = Firefox(executable_path='geckodriver', options=options,capabilities =caps) # driver to access webpages
+
+		self.username = None
 
 	# code from mozilla
 	def __example(self):
@@ -58,17 +61,34 @@ class InstagramScraper():
 
 
 	def open_user(self, username):
+		# if we have previously scraped data for a user lets add it to the total data before we
+		if self.username is not None:
+			self.all_data.append({'username': self.username, 'data': self.user_data})
+
+		self.user_data = {} # stores all the current information about the user being scraped
+
 		# direct to a new webpage of users
 		url_to_user = r'https://www.instagram.com/' + username
 		self.driver.get(url_to_user)
 		self.username = username
 		pass
 
+	def get_user_stats(self):
+		posts = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span"))).text
+		followers = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[2]/a/span"))).text
+		following = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[3]/a"))).text
+
+		self.user_data['posts'] = posts
+		self.user_data['follower_count'] = followers
+		self.user_data['following_count'] = following
+
 	def get_image_data(self):
 		# try to open first n images and gather captions
 		previous_count = 0
 		current_count = 1
 
+		self.user_data['posts'] = []
+									# {'comments': [], likecount: 0}
 		# make sure the first few images are loaded
 		WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(By.PARTIAL_LINK_TEXT, "/p/"))
 
@@ -86,25 +106,45 @@ class InstagramScraper():
 			# page down requires that it be done to an element class
 			all_picture_link_elements[0].send_keys(Keys.PAGE_DOWN)
 
-		for element in all_picture_link_elements:
-			element.click()
-			likecount = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/section[2]/div/div[2]/button/span")).text
-			username_comment_elements = self.driver.find_elements(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/h2/a")
-			comment_text_elements = self.driver.find_elements(By.XPATH,"/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/span")
-
 		# we are now outside of the loop so lets do stuff with all_picture_link_elements
 		# AKA lets parse each link in the list
 
-		#abbey's comment //*[@id="react-root"]/section/main/div/div/article/div[2]/div[1]/ul/li[2]/div/div/div/span/text()
 
-	def get_user_stats(self):
-		posts = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span"))).text
-		followers = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[2]/a/span"))).text
-		following = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[3]/a"))).text
-		# fetch followers / follows / **posts**
-		# this reduces strain on rescraping the system
+		for element in all_picture_link_elements:
+			element.click()
+			likecount = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/section[2]/div/div[2]/button/span")).text
+
+			username_comment_elements = self.driver.find_elements(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/h2/a")
+			comment_text_elements = self.driver.find_elements(By.XPATH,"/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/span")
+
+			if len(comment_text_elements) != len(username_comment_elements):
+				raise ValueError('holy shit they are supposed to be the same length and they are not some bad shit happened')
+
+			list_of_comment_data = []
+
+			for i in range(len(comment_text_elements)):
+				list_of_comment_data.append([ username_comment_elements[i].get_attribute('title') , comment_text_elements[i].text])
+
+
+
+			self.user_data['posts'].append(    {'comments': list_of_comment_data), 'like_count': likecount}       )
+
+
+
+
+
+
+
+
+
+
+
+		def clear_data_dict(self):
+			self.user_data = {}
+
+	def get_user_followers(self):
+		# find all the followers that a user has so that we can scrape them
 		pass
-
 
 # attempt to do it with requests
 def connection():
