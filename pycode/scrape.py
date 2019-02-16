@@ -62,7 +62,18 @@ class InstagramScraper():
 
 	def get_image_data(self):
 		# try to open first n images and gather captions
-		pass
+		previous_count = 0
+		current_count = 1
+
+
+		while current_count - previous_count:
+			previous_count = current_count
+
+			current_count = # find the # of links on the page_source
+
+			send_keys(Keys.PAGE_DOWN)
+
+
 
 	def get_user_stats(self):
 		# fetch followers / follows / **posts**
