@@ -9,19 +9,19 @@ def build_native(spec):
 
 	spec.add_cffi_module(
 		module_path='python._native',
-		dylib=lambda: build.find_dylib('rust', in_path='target/release'),
-		header_filename=lambda: build.find_header('example.h', in_path='target'),
+		dylib=lambda: build.find_dylib('python', in_path='target/release'),
+		header_filename=lambda: build.find_header('python.h', in_path='target'),
 		rtld_flags=['NOW', 'NODELETE']
 	)
 
 setup(
-	name='example',
+	name='python',
 	version='0.0.1',
-	packages=['example'],
+	packages=['python'],
 	zip_safe=False,
 	platforms='any',
 	setup_requires=['milksnake'],
-	install_requires=['milksnake'],
+	install_requires=['milksnake', 'numpy', 'pymysql', 'networkx', 'selenium'],
 	milksnake_tasks=[
 		build_native
 	]
