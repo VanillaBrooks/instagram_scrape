@@ -146,7 +146,7 @@ pub fn threading (original_phrases: Vec<String>,  phrases_to_compare: Vec<String
 	return (orig, cmp)
 }
 
-fn run(phrases_1: Vec<String>, phrases_2: Vec<String>, thread_count: u32)->f32 {
+pub fn run(phrases_1: Vec<String>, phrases_2: Vec<String>, thread_count: usize)->f32 {
 	let (vec_1, vec_2) = threading(phrases_1, phrases_2, thread_count);
 	let sim = cosine_sim(vec_1, vec_2);
 	return sim
