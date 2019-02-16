@@ -20,6 +20,10 @@ class InstagramScraper():
 		caps = DesiredCapabilities().FIREFOX
 		caps["pageLoadStrategy"] = "none"	# scrape page prematurely
 
+		#
+		# TODO: The executable_path will have to be reconfigured for the
+		# 		currnet location in instagram_scrape/webdrivers/geckodriver.exe
+		#
 		self.driver = Firefox(executable_path='geckodriver', options=options,capabilities =caps) # driver to access webpages
 
 	# code from mozilla
