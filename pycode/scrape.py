@@ -69,15 +69,26 @@ class InstagramScraper():
 		previous_count = 0
 		current_count = 1
 
+		# make sure the first few images are loaded
+		WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(By.PARTIAL_LINK_TEXT, "/p/"))
 
+		# while we continue to find more and more pictures
 		while current_count - previous_count:
+			# set the previous count of images to what it was before
 			previous_count = current_count
 
-			current_count = # find the # of links on the page_source
+			# and now find a list() of the total number of links on a page
+			all_picture_link_elements = self.driver.find_elements(By.PARTIAL_LINK_TEXT "/p/")
+			# get the length of all the elements that contain pictures
+			current_count = len(all_picture_link_elements)
 
-			send_keys(Keys.PAGE_DOWN)
+			# we go back to an element and send the page down since
+			# page down requires that it be done to an element class
+			all_picture_link_elements[0].send_keys(Keys.PAGE_DOWN)
 
 
+		# we are now outside of the loop so lets do stuff with all_picture_link_elements
+		# AKA lets parse each link in the list
 
 	def get_user_stats(self):
 		posts = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span")))
