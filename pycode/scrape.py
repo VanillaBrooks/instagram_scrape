@@ -86,16 +86,25 @@ class InstagramScraper():
 			# page down requires that it be done to an element class
 			all_picture_link_elements[0].send_keys(Keys.PAGE_DOWN)
 
+		for element in all_picture_link_elements:
+			element.click()
+			likecount = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/section[2]/div/div[2]/button/span")).text
+			username_comment_elements = self.driver.find_elements(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/h2/a")
+			comment_text_elements = self.driver.find_elements(By.XPATH,"/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/span")
 
 		# we are now outside of the loop so lets do stuff with all_picture_link_elements
 		# AKA lets parse each link in the list
 
-	def get_user_stats(self):
-		posts = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span")))
+		#abbey's comment //*[@id="react-root"]/section/main/div/div/article/div[2]/div[1]/ul/li[2]/div/div/div/span/text()
 
+	def get_user_stats(self):
+		posts = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span"))).text
+		followers = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[2]/a/span"))).text
+		following = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[3]/a"))).text
 		# fetch followers / follows / **posts**
 		# this reduces strain on rescraping the system
 		pass
+
 
 # attempt to do it with requests
 def connection():
