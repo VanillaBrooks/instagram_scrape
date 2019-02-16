@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup,find_packages
 
 def build_native(spec):
 	# build an example rust library
@@ -8,21 +8,37 @@ def build_native(spec):
 	)
 
 	spec.add_cffi_module(
-		module_path='python._native',
-		dylib=lambda: build.find_dylib('python', in_path='target/release'),
-		header_filename=lambda: build.find_header('python.h', in_path='target'),
+		module_path='pycode._native',
+		dylib=lambda: build.find_dylib('pycode', in_path='target/release'),
+		header_filename=lambda: build.find_header('pycode.h', in_path='target'),
 		rtld_flags=['NOW', 'NODELETE']
-	)
+)
+
+# setup(
+# 	name='py',
+# 	version='0.0.1',
+# 	packages=find_packages(),
+# 	zip_safe=False,
+# 	platforms='any',
+# 	setup_requires=['milksnake'],
+# 	install_requires=['milksnake'],
+# 	milksnake_tasks=[
+# 		build_native
+# 	]
+# )
+
 
 setup(
-	name='python',
+	name='pyrust code',
 	version='0.0.1',
-	packages=['python'],
+	packages=find_packages(),
+	include_package_data=True,
 	zip_safe=False,
 	platforms='any',
-	setup_requires=['milksnake'],
-	install_requires=['milksnake', 'numpy', 'pymysql', 'networkx', 'selenium'],
+	install_requires=[
+		'milksnake',
+	],
 	milksnake_tasks=[
-		build_native
+		build_native,
 	]
 )
