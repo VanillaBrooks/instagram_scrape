@@ -1,4 +1,4 @@
-from setuptools import setup,find_packages
+from setuptools import setup, find_packages
 
 def build_native(spec):
 	# build an example rust library
@@ -14,31 +14,18 @@ def build_native(spec):
 		rtld_flags=['NOW', 'NODELETE']
 )
 
-# setup(
-# 	name='py',
-# 	version='0.0.1',
-# 	packages=find_packages(),
-# 	zip_safe=False,
-# 	platforms='any',
-# 	setup_requires=['milksnake'],
-# 	install_requires=['milksnake'],
-# 	milksnake_tasks=[
-# 		build_native
-# 	]
-# )
-
 
 setup(
 	name='pyrust code',
 	version='0.0.1',
-	packages=find_packages(),
+	packages=find_packages('.'),
 	include_package_data=True,
 	zip_safe=False,
 	platforms='any',
-	install_requires=[
-		'milksnake',
-	],
-	milksnake_tasks=[
-		build_native,
-	]
+	# install_requires=[
+	# 	'milksnake',
+	# ],
+	# milksnake_tasks=[
+	# 	build_native,
+	# ]
 )

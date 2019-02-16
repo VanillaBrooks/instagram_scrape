@@ -8,5 +8,3 @@ def get_sql_data(list_of_users):
 def build_graph():
     # export a graph of all nodes in the swarm
     pass
-
-def
