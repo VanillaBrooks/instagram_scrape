@@ -4,7 +4,7 @@ use std::sync::Arc;
 use rayon;
 use std::sync::mpsc;
 
-
+#[no_mangle]
 fn cosine_sim(orginal_user_vec: Vec<Vec<usize>>, second_user_vec: Vec<Vec<usize>>) -> f32 {
 	let user_2_magnitudes: Vec<f32> = second_user_vec.iter().map(|v| magnitude(v)).collect::<Vec<_>>();
 	let user_1_magnitudes: Vec<f32> = orginal_user_vec.iter().map(|v| magnitude(v)).collect::<Vec<_>>();
@@ -30,7 +30,7 @@ fn cosine_sim(orginal_user_vec: Vec<Vec<usize>>, second_user_vec: Vec<Vec<usize>
 
 	return total
 }
-
+#[no_mangle]
 fn magnitude(vector: &Vec<usize>) -> f32 {
 
 	let mag : usize = vector.iter()
@@ -39,7 +39,7 @@ fn magnitude(vector: &Vec<usize>) -> f32 {
 
 	return mag
 }
-
+#[no_mangle]
 fn dot_product(vec_1: &Vec<usize>, vec_2: &Vec<usize>) -> f32{
 	let mut run_sum = 0;
 
@@ -48,7 +48,7 @@ fn dot_product(vec_1: &Vec<usize>, vec_2: &Vec<usize>) -> f32{
 	}
 	return run_sum as f32
 }
-
+#[no_mangle]
 fn _hashmap_count(vector_to_compare: Vec<String>, indexer_lock: Arc<RwLock<HashMap<String, usize>>>) -> () {
 
 	let mut write;
@@ -78,7 +78,7 @@ fn _hashmap_count(vector_to_compare: Vec<String>, indexer_lock: Arc<RwLock<HashM
 	}
 	return ()
 }
-
+#[no_mangle]
 fn _vector_count(sentence: &String, hashmap_mutex: &Arc<RwLock<HashMap<String, usize>>>, trans: mpsc::Sender<Vec<usize>>) {
 	let hashmap = hashmap_mutex.read();
 	let mut counts : Vec<usize> = vec![0; hashmap.len()];
@@ -89,7 +89,7 @@ fn _vector_count(sentence: &String, hashmap_mutex: &Arc<RwLock<HashMap<String, u
 
 	trans.send(counts).unwrap()
 }
-
+#[no_mangle]
 fn thread_hashmap_counter(passed_vector: &Vec<String>, hashmap_mutex: &Arc<RwLock<HashMap<String, usize>>>, thread_count:usize) {
 	let num_chunks = passed_vector.len() / thread_count + 1;
 
@@ -105,7 +105,7 @@ fn thread_hashmap_counter(passed_vector: &Vec<String>, hashmap_mutex: &Arc<RwLoc
 
 	});
 }
-
+#[no_mangle]
 fn thread_vector_count(vector: &Vec<String>, hashmap_mutex:&Arc<RwLock<HashMap<String, usize>>>) ->Vec<Vec<usize>>{
 	let (tx, rx) = mpsc::channel();
 
@@ -132,7 +132,7 @@ fn thread_vector_count(vector: &Vec<String>, hashmap_mutex:&Arc<RwLock<HashMap<S
 
 	return results;
 }
-
+#[no_mangle]
 pub fn threading (original_phrases: Vec<String>,  phrases_to_compare: Vec<String>, thread_count: usize)-> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
 	let map : HashMap<String, usize>= HashMap::new();
 	let hashmap_index = Arc::new(RwLock::new(map));
@@ -145,7 +145,7 @@ pub fn threading (original_phrases: Vec<String>,  phrases_to_compare: Vec<String
 
 	return (orig, cmp)
 }
-
+#[no_mangle]
 pub fn run(phrases_1: Vec<String>, phrases_2: Vec<String>, thread_count: usize)->f32 {
 	let (vec_1, vec_2) = threading(phrases_1, phrases_2, thread_count);
 	let sim = cosine_sim(vec_1, vec_2);
