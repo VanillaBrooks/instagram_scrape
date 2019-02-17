@@ -18,7 +18,7 @@ def build_native(spec):
 setup(
 	name='pyrust code',
 	version='0.0.1',
-	packages=find_packages('.'),
+	packages=find_packages(),
 	include_package_data=True,
 	zip_safe=False,
 	platforms='any',

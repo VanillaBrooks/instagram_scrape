@@ -25,7 +25,7 @@ class InstagramScraper():
 		# TODO: The executable_path will have to be reconfigured for the
 		# 		currnet location in instagram_scrape/webdrivers/geckodriver.exe
 		#
-		self.driver = Firefox(executable_path='geckodriver', options=options,capabilities =caps) # driver to access webpages
+		self.driver = Firefox(executable_path='webdrivers/geckodriver.exe', options=options,capabilities =caps) # driver to access webpages
 
 		self.username = None
 
@@ -98,7 +98,7 @@ class InstagramScraper():
 			previous_count = current_count
 
 			# and now find a list() of the total number of links on a page
-			all_picture_link_elements = self.driver.find_elements(By.PARTIAL_LINK_TEXT "/p/")
+			all_picture_link_elements = self.driver.find_elements(By.PARTIAL_LINK_TEXT, "/p/")
 			# get the length of all the elements that contain pictures
 			current_count = len(all_picture_link_elements)
 
@@ -120,14 +120,14 @@ class InstagramScraper():
 			if len(comment_text_elements) != len(username_comment_elements):
 				raise ValueError('holy shit they are supposed to be the same length and they are not some bad shit happened')
 
-			list_of_comment_data = []
+			parsed_comment_data = []
 
 			for i in range(len(comment_text_elements)):
-				list_of_comment_data.append([ username_comment_elements[i].get_attribute('title') , comment_text_elements[i].text])
+				parsed_comment_data.append([ username_comment_elements[i].get_attribute('title') , comment_text_elements[i].text])
 
 
 
-			self.user_data['posts'].append(    {'comments': list_of_comment_data), 'like_count': likecount}       )
+			self.user_data['posts'].append(    {'comments': parsed_comment_data, 'like_count': likecount}       )
 
 
 
