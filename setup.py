@@ -14,18 +14,17 @@ def build_native(spec):
 		rtld_flags=['NOW', 'NODELETE']
 )
 
+with open('requirements.txt', 'r')  as f:
+	pkg_install = f.read().split()
 
 setup(
-	name='pyrust code',
+	name='pycode',
 	version='0.0.1',
 	packages=find_packages(),
 	include_package_data=True,
 	zip_safe=False,
 	platforms='any',
-	# install_requires=[
-	# 	'milksnake',
-	# ],
-	# milksnake_tasks=[
-	# 	build_native,
-	# ]
+	setup_require=['milksnake'],
+	install_requires=pkg_install,
+	milksnake_tasks=[build_native,]
 )
