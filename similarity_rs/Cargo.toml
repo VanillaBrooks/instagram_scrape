@@ -1,0 +1,18 @@
+[package]
+name = "instagram_scrape"
+version = "0.1.0"
+authors = ["VanillaBrooks <brookskarlik@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "instagram_scrape"
+crate-type = ["cdylib"]
+
+[dependencies.pyo3]
+version = "0.6.0-alpha.2"
+features = ["extension-module"]
+
+[dependencies]
+hashbrown = "0.1.8"
+parking_lot = "0.7.1"
+rayon = "1.0.3"

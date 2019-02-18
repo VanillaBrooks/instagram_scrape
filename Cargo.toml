@@ -1,16 +1,16 @@
 [package]
-name = "pycode"
+name = "similarity_rs"
 version = "0.1.0"
 authors = ["VanillaBrooks <brookskarlik@gmail.com>"]
 edition = "2018"
-build = "build.rs"
 
 [lib]
+name = "similarity_rs"
 crate-type = ["cdylib"]
 
-[build-dependencies]
-cbindgen = "0.8"
-
+[dependencies.pyo3]
+version = "0.6.0-alpha.2"
+features = ["extension-module"]
 
 [dependencies]
 hashbrown = "0.1.8"

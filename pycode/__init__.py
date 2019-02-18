@@ -1,6 +1,11 @@
-from py._native import ffi, lib
-from . import _native
-
-
-def test():
-		return _native.lib.cosine_sim(["234"],['234234'], 5)
+# from pycode._native import ffi, lib
+#
+# l = 'this is a test phrase'.split()
+# ffi.new('char[]', l[0] )
+# # def calculate_similarity(list_str_1, list_str_2, int_to_pass):
+# #
+# # 		#
+# # 		# construct pointers here
+# # 		#
+# #
+# # 		return lib.similarity(ptr_1, ptr_2, ptr_3)
