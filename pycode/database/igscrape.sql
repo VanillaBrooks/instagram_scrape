@@ -18,7 +18,7 @@ USE `igscrape` ;
 -- Table `igscrape`.`user`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `igscrape`.`user` (
-  `id` INT GENERATED ALWAYS AS () VIRTUAL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(30) NULL,
   `screenname` VARCHAR(45) NULL,
   `original_user` TINYINT(1) NULL,
@@ -32,7 +32,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `igscrape`.`scrape` (
   `user_id` INT NOT NULL,
-  `scrape_id` INT GENERATED ALWAYS AS () VIRTUAL,
+  `scrape_id` INT NOT NULL AUTO_INCREMENT,
   `post_count` INT NOT NULL,
   `follow_count` INT NOT NULL,
   `follower_count` INT NOT NULL,
@@ -52,7 +52,7 @@ ENGINE = InnoDB;
 -- Table `igscrape`.`similarity`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `igscrape`.`similarity` (
-  `similarity_id` INT GENERATED ALWAYS AS () VIRTUAL,
+  `similarity_id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `user_id_followed` INT NULL,
   `cos_sim_value` DECIMAL(4,4) NULL,
@@ -71,7 +71,7 @@ ENGINE = InnoDB;
 -- Table `igscrape`.`post`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `igscrape`.`post` (
-  `post_id` INT GENERATED ALWAYS AS () VIRTUAL,
+  `post_id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `post_id_str` VARCHAR(45) NOT NULL,
   `caption_text` TEXT NOT NULL,
@@ -98,7 +98,7 @@ ENGINE = InnoDB;
 -- Table `igscrape`.`comment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `igscrape`.`comment` (
-  `comment_id` INT GENERATED ALWAYS AS () VIRTUAL,
+  `comment_id` INT NOT NULL AUTO_INCREMENT,
   `post_id` INT NOT NULL,
   `comment_text` TEXT NOT NULL,
   `user_id` INT NOT NULL,
