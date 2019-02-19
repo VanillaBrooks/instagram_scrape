@@ -5,19 +5,19 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema igscrape
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema igscrape
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
-USE `mydb` ;
+CREATE SCHEMA IF NOT EXISTS `igscrape` DEFAULT CHARACTER SET utf8mb4 ;
+USE `igscrape` ;
 
 -- -----------------------------------------------------
--- Table `mydb`.`user`
+-- Table `igscrape`.`user`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`user` (
+CREATE TABLE IF NOT EXISTS `igscrape`.`user` (
   `id` INT GENERATED ALWAYS AS () VIRTUAL,
   `username` VARCHAR(30) NULL,
   `screenname` VARCHAR(45) NULL,
@@ -28,9 +28,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`scrape`
+-- Table `igscrape`.`scrape`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`scrape` (
+CREATE TABLE IF NOT EXISTS `igscrape`.`scrape` (
   `user_id` INT NOT NULL,
   `scrape_id` INT GENERATED ALWAYS AS () VIRTUAL,
   `post_count` INT NOT NULL,
@@ -39,60 +39,80 @@ CREATE TABLE IF NOT EXISTS `mydb`.`scrape` (
   `scrape_date` DATETIME NOT NULL,
   `original_user` TINYINT(1) NOT NULL,
   INDEX `fk_scrape_users_idx` (`user_id` ASC) VISIBLE,
+  PRIMARY KEY (`scrape_id`),
   CONSTRAINT `fk_scrape_users`
     FOREIGN KEY (`user_id`)
-    REFERENCES `mydb`.`user` (`id`)
+    REFERENCES `igscrape`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`similarity`
+-- Table `igscrape`.`similarity`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`similarity` (
+CREATE TABLE IF NOT EXISTS `igscrape`.`similarity` (
+  `similarity_id` INT GENERATED ALWAYS AS () VIRTUAL,
   `user_id` INT NOT NULL,
   `user_id_followed` INT NULL,
   `cos_sim_value` DECIMAL(4,4) NULL,
   `calculation_date` DATETIME NULL,
   INDEX `fk_similarity_user1_idx` (`user_id` ASC) VISIBLE,
+  PRIMARY KEY (`similarity_id`),
   CONSTRAINT `fk_similarity_user1`
     FOREIGN KEY (`user_id`)
-    REFERENCES `mydb`.`user` (`id`)
+    REFERENCES `igscrape`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`post`
+-- Table `igscrape`.`post`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`post` (
+CREATE TABLE IF NOT EXISTS `igscrape`.`post` (
+  `post_id` INT GENERATED ALWAYS AS () VIRTUAL,
   `user_id` INT NOT NULL,
   `post_id_str` VARCHAR(45) NOT NULL,
-  `post_id` INT GENERATED ALWAYS AS () VIRTUAL,
   `caption_text` TEXT NOT NULL,
   `post_date` DATETIME NOT NULL,
   `like_count` INT NOT NULL,
+  `scrape_scrape_id` INT NOT NULL,
   INDEX `fk_post_user1_idx` (`user_id` ASC) VISIBLE,
+  PRIMARY KEY (`post_id`),
+  INDEX `fk_post_scrape1_idx` (`scrape_scrape_id` ASC) VISIBLE,
   CONSTRAINT `fk_post_user1`
     FOREIGN KEY (`user_id`)
-    REFERENCES `mydb`.`user` (`id`)
+    REFERENCES `igscrape`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_post_scrape1`
+    FOREIGN KEY (`scrape_scrape_id`)
+    REFERENCES `igscrape`.`scrape` (`scrape_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`comment`
+-- Table `igscrape`.`comment`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`comment` (
-  `user_id` INT NOT NULL,
+CREATE TABLE IF NOT EXISTS `igscrape`.`comment` (
+  `comment_id` INT GENERATED ALWAYS AS () VIRTUAL,
+  `post_id` INT NOT NULL,
   `comment_text` TEXT NOT NULL,
-  PRIMARY KEY (`user_id`),
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`comment_id`),
+  INDEX `fk_comment_post1_idx` (`post_id` ASC) VISIBLE,
+  INDEX `fk_comment_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_comment_post1`
+    FOREIGN KEY (`post_id`)
+    REFERENCES `igscrape`.`post` (`post_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
   CONSTRAINT `fk_comment_user1`
     FOREIGN KEY (`user_id`)
-    REFERENCES `mydb`.`user` (`id`)
+    REFERENCES `igscrape`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
