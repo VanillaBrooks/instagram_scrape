@@ -1,5 +1,6 @@
 import pymysql
 import subprocess
+import os
 
 class database():
 
@@ -34,57 +35,6 @@ class database():
 		self.conn, self.cursor = conn, cursor
 		return conn, cursor
 
-	# function to create a new database and initialize tables to hold scraped data
-	def init_database(self):
-		#
-		# The following line was commented out of the database .sql file :
-		# -- SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-		# becuase mysql thought that it would allow a null value
-		#
-		# If there is a big ass error at some point in the future it might be
-		# becuase of this
-		#
-		# Note: mysqlworkbench forward engineered the script provided without issue
-		#
-
-		mysql_auth = 'mysql -u {} -p; {};'.format(self.user, self.password)
-
-		# TODO : change this to use mysql connector
-		try:
-			conn, cursor = self.connection_mysql()
-			with open('pycode\database\igscrape.sql' , 'r') as f:
-				data = f.read().split(';')
-				for i in data:
-					query = i.strip('\n')
-					if self.validate_query(query):
-						try:
-							cursor.execute(query)
-						except Exception as e:
-							print('!!!WARNING the command {} did not run')
-				conn.commit()
-
-		except Exception as e:
-			print("there was an exception making the database {}".format(e))
-			print('the line was %s' % query)
-
-	# function to make sure that each line executed will be ok
-	@staticmethod
-	def validate_query(query):
-		if type(query) != str:
-			raise TypeError('should be string')
-
-		if '-' in query[0:5]:
-			return False
-		vowel_in = False
-		for vowel in 'aeiou=AEIOU':
-			if vowel  in query:
-				vowel_in = True
-				break
-		if not vowel_in:
-			print("the query : %s was empty, %s" % (query, type(query)))
-			return False
-
-		return True
 
 if __name__ == "__main__":
 	x = database('root', 'pass')
