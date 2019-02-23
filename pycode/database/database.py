@@ -1,8 +1,9 @@
 import pymysql
 import subprocess
 import os
+from queries import Queries
 
-class database():
+class Database(Queries):
 
 	def __init__(self, username,password):
 		self.db_name = "igscrape"
@@ -35,7 +36,17 @@ class database():
 		self.conn, self.cursor = conn, cursor
 		return conn, cursor
 
+	def init_database(self):
+
+		shell = subprocess.Popen(['mysql','-u',self.user, '-p"{}"'.format(self.password)],
+								 shell=True,
+								 stdin=subprocess.PIPE,
+								 cwd = './pycode/database/')
+
+		shell.communicate('source igscrape.sql')
+
+
 
 if __name__ == "__main__":
-	x = database('root', 'pass')
-	x.init_database()
+	# x = database('root', 'pass')
+	# x.init_database()
