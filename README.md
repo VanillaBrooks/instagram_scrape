@@ -1,2 +1,2 @@
 # instagram_scrape
-matching similarity of instagram profiles
+Graphing instagram relationships through cosine / jaccard similarity and account statistics
