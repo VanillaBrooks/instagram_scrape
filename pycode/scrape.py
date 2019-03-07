@@ -6,8 +6,13 @@ from selenium.webdriver.support import expected_conditions as expected
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.common.exceptions import StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException
+import selenium
 
 import json
+import string
+import time
 
 #https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Headless_mode
 
@@ -29,16 +34,10 @@ class InstagramScraper():
 
 		self.username = None
 
-	# code from mozilla
-	def __example(self):
-		self.driver.get('http://www.google.com')
-		wait.until(expected.visibility_of_element_located((By.NAME, 'q'))).send_keys('headless firefox' + Keys.ENTER)
-		wait.until(expected.visibility_of_element_located((By.CSS_SELECTOR, '#ires a'))).click()
-		print(self.driver.page_source)
-		self.driver.quit()
-
+	# log a user in from either input arguments or stored json
 	def authenticate(self, username=False, password=False):
 		LOGIN_URL = 'https://www.instagram.com/accounts/login/'
+		# self.driver.switch_to.frame(self.driver.find_element_by_name('spout-unit-iframe')) # switch iframe code
 
 		# get login details from json if none specified
 		if not (username and password):
@@ -49,18 +48,28 @@ class InstagramScraper():
 
 		self.driver.get(LOGIN_URL) # load up the instagram login page
 
-		# TODO: Fix this xpath (instagram uses .js to create new ids each time)
-		username = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[contains(@aria-label, ‘Phone number, username, or email’)]")))
-		username.click()
-		username.send_keys(username) # send the keys for the username
+		# username field
+		username_elem = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[@name='username']")))
+		username_elem.click()
+		username_elem.send_keys(username) # send the keys for the username
 
-		password = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[contains(@aria-label, ‘Password’)]")))
-		passsword.click()
-		password.send_keys(password) # send the keys for the password
+		# password field
+		password_elem = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//input[@name='password']")))
+		password_elem.click()
+		password_elem.send_keys(password) # send the keys for the password
 
+		# click the submit button
+		submit_elem = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@type='submit']")))
+		submit_elem.click()
 
+		# when you launch without cookies it promtps you to set stuff up. this clicks "not now"
+		not_now_elem = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/span/div/div[2]/a[2]")))
+		not_now_elem.click()
 
+	# open a user's instagram page
 	def open_user(self, username):
+		print('opened a new user {}'.format(username))
+
 		# if we have previously scraped data for a user lets add it to the total data before we
 		if self.username is not None:
 			self.all_data.append({'username': self.username, 'data': self.user_data})
@@ -68,19 +77,37 @@ class InstagramScraper():
 		self.user_data = {} # stores all the current information about the user being scraped
 
 		# direct to a new webpage of users
-		url_to_user = r'https://www.instagram.com/' + username
-		self.driver.get(url_to_user)
+		self.url_to_user = r'https://www.instagram.com/' + username
+		self.driver.get(self.url_to_user)
 		self.username = username
-		pass
 
+		print('loaded user {} , exiting function'.format(self.url_to_user))
+
+	# get profile stats for a user
 	def get_user_stats(self):
-		posts = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span"))).text
-		followers = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[2]/a/span"))).text
-		following = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[3]/a"))).text
+		# function to remove the potential punctuation in a element
+		def remove_punctuation(input_elem):
+			return input_elem.text.translate(str.maketrans('', '', string.punctuation))
 
-		self.user_data['posts'] = posts
-		self.user_data['follower_count'] = followers
-		self.user_data['following_count'] = following
+		# XPATHS for post \ follower \ following counts
+		posts = remove_punctuation(WebDriverWait(self.driver, 10).until(\
+			EC.presence_of_element_located((\
+			By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[1]/span/span"))))
+		followers = remove_punctuation(WebDriverWait(self.driver, 10).until(\
+			EC.presence_of_element_located((\
+			By.XPATH, "//*[@id='react-root']/section/main/div/header/section/ul/li[2]/a/span"))))
+		following = remove_punctuation(WebDriverWait(self.driver, 10).until(\
+			EC.presence_of_element_located((\
+			By.XPATH, "/html/body/span/section/main/div/header/section/ul/li[3]/a/span"))))
+
+
+		# for debug: print out all the data for the currently loaded user
+		print(f'the user data:\nposts : {posts}\nfollowers: {followers}\nfollowing: {following}')
+
+		# store data in the main dictionary for later
+		self.user_data['post_count'] = int(posts)
+		self.user_data['follower_count'] = int(followers)
+		self.user_data['following_count'] = int(following)
 
 	def get_image_data(self):
 		# try to open first n images and gather captions
@@ -90,91 +117,166 @@ class InstagramScraper():
 		self.user_data['posts'] = []
 									# {'comments': [], likecount: 0}
 		# make sure the first few images are loaded
-		WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(By.PARTIAL_LINK_TEXT, "/p/"))
+		WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//a[contains(@href, "/p/")]')))
+		#'//a[contains(@href, "WO20")]'
+		print('here')
 
-		# while we continue to find more and more pictures
-		while current_count - previous_count:
+		body_elem = self.driver.find_element(By.XPATH, '/html')
+		picture_links = set()
+		picture_url_xpath = '//a[contains(@href, "/p/")]'
+		pics = self.driver.find_elements(By.XPATH, picture_url_xpath)
+
+		# push down the user's page while we are still finding more pictures
+		while current_count < self.user_data['post_count']:
+			print(f'in loop with a picture count of {current_count}')
 			# set the previous count of images to what it was before
 			previous_count = current_count
 
 			# and now find a list() of the total number of links on a page
-			all_picture_link_elements = self.driver.find_elements(By.PARTIAL_LINK_TEXT, "/p/")
+			all_picture_link_elements = self.driver.find_elements(By.XPATH, picture_url_xpath)
 			# get the length of all the elements that contain pictures
-			current_count = len(all_picture_link_elements)
+			picture_links.update({i.get_attribute('href') for i in all_picture_link_elements if i not in picture_links})
+			current_count = len(picture_links)
+			print('total len: {} current len: {}'.format(current_count, len(all_picture_link_elements)))
 
 			# we go back to an element and send the page down since
 			# page down requires that it be done to an element class
-			all_picture_link_elements[0].send_keys(Keys.PAGE_DOWN)
+
+			for _ in range(3):
+				time.sleep(.1)
+				print('scroll...')
+				body_elem.send_keys(Keys.PAGE_DOWN)
 
 		# we are now outside of the loop so lets do stuff with all_picture_link_elements
 		# AKA lets parse each link in the list
 
+		print(f'about to parse through the {len(all_picture_link_elements)} pictures found')
+		# print('the picture links are')
+		# import pprint
+		# pprint.pprint(picture_links)
+		old_caption = False	 # ensures the first run of the while loop stops early
 
-		for element in all_picture_link_elements:
-			element.click()
-			likecount = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/section[2]/div/div[2]/button/span")).text
+		# open each url and collect metadata from the post
+		for url in picture_links:
+			# url = self.url_to_user + element.get_attribute('href')
+			print(f'url to picture is {url}')
+			self.driver.get(url)
 
-			username_comment_elements = self.driver.find_elements(By.XPATH, "/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/h2/a")
-			comment_text_elements = self.driver.find_elements(By.XPATH,"/html/body/div[2]/div[2]/div/article/div[2]/div[1]/ul/li/div/div/div/span")
+			text_path = "/html/body/span/section/main/div/div/article/div/div/ul/li/div/div/div/span"
 
-			if len(comment_text_elements) != len(username_comment_elements):
+			# run this loop to ensure that the page being parsed was not equal
+			# to the last page that was just scraped. If this loop does not run
+			# then we will parse the same page over and over before the page
+			# ever even loads for the first time
+			while True:
+				# catch an exception that happens from reloading the page while scraping it
+				try:
+					caption_text = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, text_path))).text
+				except StaleElementReferenceException:
+					print('Refresh page exception ! ')
+					continue
+
+				# if its the first time in the for loop we can just exit now
+				if old_caption == False: break
+
+				# get all text from the comments
+				# print('::::the caption is {} \n'.format(caption_text))
+				# print('::::the old caption was {}'.format(old_caption))
+
+				if caption_text == old_caption:
+					# print('!!!they match, try again')
+					continue
+				else:
+					# print('!!!!dont match, break')
+					break
+
+
+			text = self.driver.find_elements(By.XPATH, text_path)
+			text = [i.text for i in text]
+			caption_text = text.pop(0)
+
+			like_path = "/html/body/span/section/main/div/div/article/div[2]/section[2]/div/div/a/span"
+			try: likecount = self.driver.find_element(By.XPATH, like_path).text
+			except NoSuchElementException: likecount = 0 	# post uses views instead of likes
+
+			# get all users that have commented
+			users_path = "/html/body/span/section/main/div/div/article/div[2]/div[1]/ul/li/div/div/div/h3/a"
+			users = self.driver.find_elements(By.XPATH, users_path)
+			users = [i.text for i in users]
+
+
+			print(f"like count {likecount} usernames {len(users)} text{len(text)}")
+
+			print(users)
+			print(text)
+			print('\n\n\n\n')
+
+			# the length of comment text is 1 more than usernames of comments
+			# the main caption is included in the comments, but not poster name
+			if len(text) != len(users):
 				raise ValueError('holy shit they are supposed to be the same length and they are not some bad shit happened')
 
 			parsed_comment_data = []
 
-			for i in range(len(comment_text_elements)):
-				parsed_comment_data.append([ username_comment_elements[i].get_attribute('title') , comment_text_elements[i].text])
+			for i in range(len(text)):
+				parsed_comment_data.append([users[i] , text[i]])
 
+			self.user_data['posts'].append({'comments': parsed_comment_data, 'like_count': likecount, 'caption':caption_text})
 
+			first_run = False # enable additional checks now
+			old_caption = caption_text
 
-			self.user_data['posts'].append(    {'comments': parsed_comment_data, 'like_count': likecount}       )
+	def clear_data_dict(self):
+		self.user_data = {}
 
-
-
-
-
-
-
-
-
-
-
-		def clear_data_dict(self):
-			self.user_data = {}
-
+#
+#	THIS FUNCTION NEEDS TO BE FIXED TO FIND FOLLOWING
+#
 	def get_user_followers(self):
-		# find all the followers that a user has so that we can scrape them
-		pass
+		following_path = '/html/body/span/section/main/div/header/section/ul/li[3]/a/span'
+		user_path = '/html/body/div[2]/div/div[2]/ul/div/li/div/div[2]/div[1]/div/div/a'
+		user_path = '/html/body/div[2]/div/div[2]/ul/div/li/div/div[1]/div[1]/a'
+		see_all_suggestions_path = '/html/body/div[2]/div/div[2]/div[4]/a'
+		header_path = '/html/body/div[2]/div/div[2]'
 
-# attempt to do it with requests
-def connection():
-	import requests
-	with open (r'authentication/config.json') as file:
-		user_details = json.load(file)
-		username = user_details['username']
-		password = user_details['password']
+		# /html/body/div[2]/div/div[2]/ul/div/li[119]/div/div[1]/div[2]/div[1]/a
 
-	import bs4
+		following_elem= WebDriverWait(self.driver, 10).until(\
+			EC.presence_of_element_located((\
+			By.XPATH, following_path)))
+		following_elem.click()
 
-	req = requests.Session()
-	base = req.get("https://instagram.com")
-	req.headers = {'user-agent': r'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0'}
-	req.headers.update({"Referer": "https://instagram.com"})
+		count = 0
+		all_users = set()
+		WebDriverWait(self.driver, 10).until(\
+			EC.presence_of_element_located((\
+			By.XPATH, user_path)))
 
-	req.headers.update({'X-CSRFToken': base.cookies['csrftoken']})
+		import pprint
+		old_vis = False
+		while count < self.user_data['following_count']:
+			visible = self.driver.find_elements(By.XPATH, user_path)
 
-	login = req.post('https://instagram.com/login', data={"Username": "slayer_man_226", "Password": "sailboat123"}, allow_redirects=True)
+			try:visible_set = {i.get_attribute('href') for i in visible}
+			except Exception: continue
+			all_users.update(visible_set)
+			count = len(all_users)
+			print(f'current count: {count} percentage: {100*count/self.user_data["following_count"]}')
 
-	req.headers.update({'X-CSRFToken' : login.cookies['csrftoken']})
-
-	result = req.get("https://instagram.com/ayaanakano", auth=(username, password))
-
-	soup = bs4.BeautifulSoup(result.text)
-
-	with open ('html.txt', 'wb') as f:
-		f.write(soup.prettify().encode("utf8"))
+			self.driver.find_element(By.XPATH, header_path).send_keys(Keys.PAGE_DOWN)
+			time.sleep(.1)
 
 
 if __name__ == "__main__":
+	start = time.time()
+
 	i = InstagramScraper()
 	i.authenticate()
+	i.open_user('ayaanakano')
+	i.get_user_stats()
+	i.get_user_followers()
+	i.get_image_data()
+
+	end = time.time()
+
+	print('runtime: {end-start}')
