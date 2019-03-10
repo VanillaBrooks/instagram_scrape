@@ -16,10 +16,6 @@ import string
 import time
 import bs4
 
-#https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Headless_mode
-
-
-
 class InstagramScraper():
 	def __init__(self):
 		options = Options()
@@ -242,7 +238,6 @@ class InstagramScraper():
 		while current_count < self.user_data['post_count']:
 			print(f'in loop with a picture count of {current_count}')
 			# set the previous count of images to what it was before
-			previous_count = current_count
 
 			# and now find a list() of the total number of links on a page
 			all_picture_link_elements = self.driver.find_elements(
@@ -280,6 +275,23 @@ class InstagramScraper():
 #	THIS FUNCTION NEEDS TO BE FIXED TO FIND FOLLOWING
 #
 	def get_user_followers(self):
+		def parse_html_for_usernames(input_html, return_names=False):
+			# beautiful soup setup to find all candidate elements with <a> tag
+			soup = bs4.BeautifulSoup(input_html,features="html.parser")
+			links = soup.find_all('a')
+
+			usernames = []
+			for j in links:
+				try:
+					j['href']
+					usernames.append(j['title'])
+				except Exception:
+					pass
+
+			if return_names == True:
+				return usernames
+			else:
+				return len(usernames)
 		following_path = '/html/body/span/section/main/div/header/section/ul/li[3]/a/span'
 		user_path = '/html/body/div[2]/div/div[2]/ul/div/li/div/div[1]/div[1]/a'
 		header_path = '/html/body/div[2]/div/div[2]'
@@ -327,25 +339,6 @@ class InstagramScraper():
 		# since we are out of the loop we must have found every single username link
 		# we can add it to self.user_data and exit the function
 		self.user_data['following'] = parse_html_for_usernames(source, True)
-
-		@staticmethod
-		def parse_html_for_usernames(input_html, return_names=False):
-			# beautiful soup setup to find all candidate elements with <a> tag
-			soup = bs4.BeautifulSoup(input_html,features="html.parser")
-			links = soup.find_all('a')
-
-			usernames = []
-			for j in links:
-				try:
-					j['href']
-					usernames.append(j['title'])
-				except Exception:
-					pass
-
-			if return_names == True:
-				return usernames
-			else:
-				return len(usernames)
 
 if __name__ == "__main__":
 	start = time.time()

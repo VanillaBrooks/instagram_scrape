@@ -1,7 +1,7 @@
 
 -- table: `users`
 
-    SELECT `user_id`, `username` FROM `users`;
+    SELECT `user_id`, `username` FROM `user`;
 
     -- insert new username into db
 
@@ -14,17 +14,17 @@
 --table: `scrape`
 
     -- create new scrape instance and fetch the id for inserting posts
-    INSERT INTO `scrape` (`user_id`, `scrape_id`, `post_count`, `follow_count`, `follower_count`,
-    `scrape_date`) VALUES (%s,%s,%s,%s,%s,%s);
+    INSERT INTO `scrape` (`user_id`, `post_count`, `follow_count`, `follower_count`,
+    `scrape_date`, ) VALUES (%s,%s,%s,%s,%s);
                         -- note: original_user was ommitted because we are moving that data to a new table
 
-        SELECT `scrape_id` FROM `scrape` WHERE `user_id` = %s; -- note:with multiple scrapes we will have to pick the most recent one
+        SELECT `id` FROM `scrape` WHERE `user_id` = %s; -- note:with multiple scrapes we will have to pick the most recent one
 
 
 -- table: `post`
     -- insert all scraped posts posts into `posts`
 
-    INSERT INTO `post` (`user_id`, `post_id_str`, `caption_text`, `post_date`, `like_count`, `scrape_scrape_id`)
+    INSERT INTO `post` (`user_id`, `post_id_str`, `caption_text`, `post_date`, `like_count`, `scrape_id`)
                 VALUES(%s,%s,%s,%s,%s,%s);
 
     -- get all previous post captions
@@ -33,9 +33,18 @@
 
     -- get post ID for inserting `comments`
 
-    SELECT `post_id` FROM `post` WHERE `scrape_scrape_id` = %s AND `post_id_str`= %s;
+    SELECT `id` FROM `post` WHERE `scrape_id` = %s AND `post_id_str`= %s;
 
 -- table: `comment`
     -- insert comment for a given post
 
     INSERT INTO `comment` (`post_id`, `comment_text`, `user_id`) VALUES (%s,%s,%s);
+
+    SELECT `comment_text` from `comment` WHERE user_id = %s;
+
+-- table: `similarity`
+
+    INSERT INTO `similarity` (`user_id`, `user_id_followed`, `cos_sim_value`)
+
+    SELECT `cos_sim_value` FROM `similarity` WHERE user_id= %s and user_id_followed = %s;
+
